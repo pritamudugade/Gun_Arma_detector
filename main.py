@@ -61,7 +61,7 @@ def video_input():
             # Add your image inference code here using the model
             # Replace 'model\Arma_(Gun)detector.pt' with the actual model path
             # Example: model_path = "path_to_your_model/model.pt"
-            model_path = "model\Arma_(Gun)detector.pt"
+            model_path = r"model\Arma_(Gun)detector.pt"
             # Load the model and perform inference
             # model = load_model(model_path)
             # prediction = infer_image(frame, model)
