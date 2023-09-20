@@ -58,15 +58,13 @@ def video_input():
                 break
             frame = cv2.resize(frame, (width, height))
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            # Add your image inference code here using the model
-            # Replace 'model\Arma_(Gun)detector.pt' with the actual model path
-            # Example: model_path = "path_to_your_model/model.pt"
-            model_path = r"Arma_(Gun)detector.pt"
-            # Load the model and perform inference
-            # model = load_model(model_path)
-            # prediction = infer_image(frame, model)
-            # Display the prediction on the frame
-            # frame_with_prediction = draw_prediction(frame, prediction)
+        
+            model_path = "Arma_(Gun)detector.pt"
+            #Load the model and perform inference
+            model = load_model(model_path)
+            prediction = infer_image(frame, model)
+            Display the prediction on the frame
+            frame_with_prediction = draw_prediction(frame, prediction)
             output.image(frame, use_column_width=True)  # Display the video on full screen
 
 if __name__ == "__main__":
