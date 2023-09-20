@@ -63,7 +63,7 @@ def video_input():
             #Load the model and perform inference
             model = load_model(model_path)
             prediction = infer_image(frame, model)
-            Display the prediction on the frame
+            # Display the prediction on the frame
             frame_with_prediction = draw_prediction(frame, prediction)
             output.image(frame, use_column_width=True)  # Display the video on full screen
 
