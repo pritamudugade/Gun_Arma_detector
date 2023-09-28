@@ -20,52 +20,70 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-def video_input():
-    vid_file = None
-    vid_bytes = st.sidebar.file_uploader("Upload a video", type=['mp4', 'mpv', 'avi'])
-    if vid_bytes:
-        try:
-            # Use a unique filename based on current time to avoid conflicts
-            import time
-            timestamp = int(time.time())
-            vid_file = f"data/uploaded_data/upload_{timestamp}.mp4"
+import cv2
+import numpy as np
+import streamlit as st
+import tempfile
+import os
+import keras
 
-            # Save the uploaded video to the specified path
-            with open(vid_file, 'wb') as out:
-                out.write(vid_bytes.read())
+# Load the model
+cnn_model = keras.models.load_model('gun_detector_model1.h5')
 
-            # Provide a success message to the user
-            st.sidebar.success(f"Video uploaded successfully as {vid_file}")
-        except Exception as e:
-            st.sidebar.error(f"An error occurred while processing the uploaded video: {e}")
-            st.write(e)  # Print the exception details to the app for debugging
+# Define a function to preprocess a frame for inference
+def preprocess_frame(frame):
+    frame = cv2.resize(frame, (416, 416))
+    frame = frame / 255.0
+    frame = np.expand_dims(frame, axis=0)
+    return frame
 
-    if vid_file:
-        cap = cv2.VideoCapture(vid_file)
-        custom_size = st.sidebar.checkbox("Custom frame size")
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        if custom_size:
-            width = st.sidebar.number_input("Width", min_value=120, step=20, value=width)
-            height = st.sidebar.number_input("Height", min_value=120, step=20, value=height)
+# Create a Streamlit app
+st.title("Gun Detection App")
 
-        st.markdown("---")
-        output = st.empty()
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                st.write("Can't read frame...")
-                break
-            frame = cv2.resize(frame, (width, height))
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        
-            model_path = "Arma_(Gun)detector.pt"
-            #Load the model and perform inference
-            model = load_model(model_path)
-            prediction = infer_image(frame, model)
-            # Display the prediction on the frame
-            frame_with_prediction = draw_prediction(frame, prediction)
-            output.image(frame, use_column_width=True)  # Display the video on full screen
+# Upload a video file
+video_file = st.file_uploader("Upload a video file", type=["mp4"])
+if video_file:
+    # Save the uploaded video temporarily
+    temp_video_path = os.path.join(tempfile.gettempdir(), video_file.name)
+    with open(temp_video_path, "wb") as temp_file:
+        temp_file.write(video_file.read())
+
+    # Open the video file
+    cap = cv2.VideoCapture(temp_video_path)
+
+    if not cap.isOpened():
+        st.error("Error: Unable to open the uploaded video.")
+    else:
+        st.success("Video opened successfully.")
+
+    # Display the video feed and perform gun detection
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            st.warning("End of video.")
+            break
+
+        # Preprocess the frame
+        preprocessed_frame = preprocess_frame(frame)
+
+        # Pass the preprocessed frame through your CNN model for inference
+        prediction = cnn_model.predict(preprocessed_frame)
+
+        # Check the prediction to decide if it's a gun or not
+        if prediction >= 0.5:
+            cv2.rectangle(frame, (0, 0), (frame.shape[1], frame.shape[0]), (0, 255, 0), 2)
+
+        # Display the frame in Streamlit
+        st.image(frame, channels="BGR", use_column_width=True)
+
+    # Release the video capture
+    cap.release()
+    st.warning("Video closed.")
+
+    # Remove the temporary video file
+    os.remove(temp_video_path)
+
+
 
 if __name__ == "__main__":
     video_input()
