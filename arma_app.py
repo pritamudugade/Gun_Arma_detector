@@ -8,7 +8,7 @@ import torchvision.transforms as transforms
 from torchvision import models
 
 # Load the PyTorch model
-model = torch.load('gun_detector_model.pt', map_location=torch.device('cpu'))
+model = torch.load('Arma_(Gun)detector.pt', map_location=torch.device('cpu'))
 model.eval()
 
 # Define a function to preprocess a frame for inference
