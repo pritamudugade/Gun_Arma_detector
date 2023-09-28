@@ -28,7 +28,7 @@ import os
 import keras
 
 # Load the model
-cnn_model = keras.models.load_model('gun_detector_model1.h5')
+cnn_model = keras.models.load_model('gun_detector_model.h5')
 
 # Define a function to preprocess a frame for inference
 def preprocess_frame(frame):
